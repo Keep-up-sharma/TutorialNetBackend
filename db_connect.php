@@ -1,8 +1,7 @@
  <?php
      define('DB_DSN','mysql:host=localhost;dbname=tutorials;charset=utf8');
      define('DB_USER','Anmol');
-     define('DB_PASS','H@ardPassword');     
-     
+     define('DB_PASS','!ha[Qyv26o(xuJMv');       
      try {
          // Try creating new PDO connection to MySQL.
          $db = new PDO(DB_DSN, DB_USER, DB_PASS);
