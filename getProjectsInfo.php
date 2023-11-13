@@ -3,6 +3,13 @@ header("content-type:Application/json");
 header("Access-Control-Allow-Origin: *");
 require "db_connect.php";
 $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category',(SELECT COUNT(*) FROM projects) as 'total' FROM projects";
+
+$filter = filter_input(INPUT_GET, "filter", FILTER_SANITIZE_STRING);
+
+if ($filter) {
+    $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category',(SELECT COUNT(*) FROM projects  WHERE projects.title LIKE :filter) as 'total' FROM projects  WHERE projects.title LIKE :filter";
+}
+
 if (isset($_GET["sortby"])) {
     switch ($_GET["sortby"]) {
         case 'name':
@@ -23,9 +30,16 @@ $limit = filter_input(INPUT_GET, "limit", FILTER_SANITIZE_NUMBER_INT);
 $offset = filter_input(INPUT_GET, "offset", FILTER_SANITIZE_NUMBER_INT);
 
 $statement .= " LIMIT :limit OFFSET :offset";
+
 $query = $db->prepare($statement);
 $query->bindValue(":limit", $limit, PDO::PARAM_INT);
 $query->bindValue(":offset", $offset, PDO::PARAM_INT);
+
+
+if ($filter) {
+    $query->bindValue(":filter", $filter);
+}
+
 $query->execute();
 $projects = $query->fetchAll(PDO::FETCH_ASSOC);
 $query = $db->prepare("SELECT * FROM slides ORDER BY project_id,num");
