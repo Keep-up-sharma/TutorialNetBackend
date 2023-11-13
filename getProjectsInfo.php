@@ -2,7 +2,26 @@
 header("content-type:Application/json");
 header("Access-Control-Allow-Origin: *");
 require "db_connect.php";
-$query = $db->prepare("SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category' FROM projects");
+$statement;
+if (isset($_GET["sortby"])) {
+    switch ($_GET["sortby"]) {
+        case 'name':
+            $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category' FROM projects ORDER BY projects.title ASC";
+            break;
+        case 'date':
+            $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category' FROM projects ORDER BY projects.uploadDate DESC";
+            break;
+        case 'creator':
+            $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category' FROM projects ORDER BY projects.creator ASC";
+            break;
+        default:
+            $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category' FROM projects";
+            break;
+    }
+} else {
+    $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category' FROM projects";
+}
+$query = $db->prepare($statement);
 $query->execute();
 $projects = $query->fetchAll(PDO::FETCH_ASSOC);
 $query = $db->prepare("SELECT * FROM slides ORDER BY project_id,num");

@@ -12,7 +12,7 @@ if (isset($_SESSION['user'])) {
     $title = filter_var($_POST['title'], FILTER_SANITIZE_STRING);
     $description = filter_var($_POST['description'], FILTER_SANITIZE_STRING);
     $projectId = filter_var($_POST['projectId'], FILTER_SANITIZE_NUMBER_INT);
-    if (isset($_FILES['thumbnail'])) {
+    if (!empty($_FILES['thumbnail']['name']) && getimagesize($_FILES['thumbnail']["tmp_name"])) {
         $file = $_FILES['thumbnail'];
         $filename = 'uploads/' . time() . $_FILES['thumbnail']['name'];
         if (move_uploaded_file($file['tmp_name'], $filename)) {
@@ -40,7 +40,16 @@ if (isset($_SESSION['user'])) {
             $result = 'success';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
         }
+    }else{
+        $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description WHERE `Creator` = :username AND `Id` = :projectId');
+            $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
+            $query->bindValue(':title', $title, PDO::PARAM_STR);
+            $query->bindValue(':description', $description, PDO::PARAM_STR);
+            $query->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+            $query->execute();
+            $result = 'success';
+            header('Location: ' . $_SERVER['HTTP_REFERER']);
     }
 }
-echo json_encode(['result'=>$result]);
+echo json_encode(['result' => $result]);
 ?>
