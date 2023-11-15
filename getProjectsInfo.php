@@ -2,12 +2,17 @@
 header("content-type:Application/json");
 header("Access-Control-Allow-Origin: *");
 require "db_connect.php";
-$statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category',(SELECT COUNT(*) FROM projects) as 'total' FROM projects";
+$statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id ";
 
 $filter = filter_input(INPUT_GET, "filter", FILTER_SANITIZE_STRING);
+$category = filter_input(INPUT_GET, "category", FILTER_SANITIZE_STRING);
 
-if ($filter) {
-    $statement = "SELECT *, (SELECT categories.name FROM categories WHERE id = projects.category_id) as 'category',(SELECT COUNT(*) FROM projects  WHERE projects.title LIKE :filter) as 'total' FROM projects  WHERE projects.title LIKE :filter";
+if ($filter && !$category) {
+    $statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects  WHERE projects.title LIKE :filter) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id  WHERE projects.title LIKE :filter";
+} else if ($filter && $category) {
+    $statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects INNER JOIN categories ON projects.category_id = categories.id  WHERE projects.title LIKE :filter AND categories.name = :category) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id   WHERE projects.title LIKE :filter AND categories.name = :category";
+}elseif ($category) {
+    $statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects INNER JOIN categories ON projects.category_id = categories.id WHERE categories.name = :category) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id   WHERE categories.name = :category";
 }
 
 if (isset($_GET["sortby"])) {
@@ -39,7 +44,9 @@ $query->bindValue(":offset", $offset, PDO::PARAM_INT);
 if ($filter) {
     $query->bindValue(":filter", $filter);
 }
-
+if ($category) {
+    $query->bindValue(":category", $category);
+}
 $query->execute();
 $projects = $query->fetchAll(PDO::FETCH_ASSOC);
 $query = $db->prepare("SELECT * FROM slides ORDER BY project_id,num");
