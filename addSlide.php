@@ -1,7 +1,7 @@
 <?php
 session_start();
 header("content-type:Application/json");
-header("Access-Control-Allow-Origin: http://localhost:5173");
+require('config.php');
 header("Access-Control-Allow-Credentials: true");
 require "db_connect.php";
 $result = 'fail';
