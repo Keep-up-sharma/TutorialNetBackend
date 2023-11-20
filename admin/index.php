@@ -2,11 +2,23 @@
 require "authenticate.php";
 require "db_connect.php";
 
+// Function to sanitize and validate input
+function sanitizeInput($input)
+{
+    return filter_var($input, FILTER_SANITIZE_STRING);
+}
+
 // Update user information
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update"])) {
-    $username = $_POST["username"];
-    $email = $_POST["email"];
-    $id = $_POST["id"];
+    $username = sanitizeInput($_POST["username"]);
+    $email = filter_input(INPUT_POST, "email", FILTER_VALIDATE_EMAIL);
+    $id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
+
+    if ($email === false || $id === false) {
+        // Invalid input
+        echo "Invalid input.";
+        exit;
+    }
 
     $updateQuery = $db->prepare("UPDATE users SET email = :email , username = :username WHERE id=:id");
     $updateQuery->bindParam(':email', $email);
@@ -16,13 +28,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["update"])) {
     echo 'done';
 }
 
+// ... (similar modifications for other blocks)
+
+// Add input validation for new user addition
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add"])) {
-    $newUsername = $_POST["newUsername"];
-    $newEmail = $_POST["newEmail"];
-    $newPassword = $newEmail . $_POST["newPassword"] . $newEmail;
+    $newUsername = sanitizeInput($_POST["newUsername"]);
+    $newEmail = filter_input(INPUT_POST, "newEmail", FILTER_VALIDATE_EMAIL);
+    $newPassword = sanitizeInput($_POST["newPassword"]);
+
+    if ($newEmail === false) {
+        // Invalid email
+        echo "Invalid email.";
+        exit;
+    }
 
     // Hash the password using password_hash
-    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+    $hashedPassword = password_hash($newEmail . $newPassword . $newEmail, PASSWORD_DEFAULT);
 
     // Insert new user into the database
     $insertQuery = $db->prepare("INSERT INTO users (username, email, hashedPassword) VALUES (:username, :email, :hashedPassword)");
@@ -32,9 +53,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["add"])) {
     $insertQuery->execute();
 }
 
+// ... (similar modifications for other blocks)
+
 // Delete user
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["delete"])) {
-    $id = $_POST["id"];
+    $id = filter_input(INPUT_POST, "id", FILTER_VALIDATE_INT);
+
+    if ($id === false) {
+        // Invalid input
+        echo "Invalid input.";
+        exit;
+    }
 
     $deleteQuery = $db->prepare("DELETE FROM users WHERE id = :id");
     $deleteQuery->bindParam(':id', $id);
@@ -46,6 +75,7 @@ $query = $db->prepare("SELECT * FROM users");
 $query->execute();
 $users = $query->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

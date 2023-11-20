@@ -2,17 +2,17 @@
 header("content-type:Application/json");
 header("Access-Control-Allow-Origin: *");
 require "db_connect.php";
-$statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id ";
+$statement = "SELECT PROJECTS.*, categories.name as 'category',(SELECT COUNT(*) FROM projects) as 'total' FROM projects LEFT OUTER JOIN categories ON projects.category_id = categories.id ";
 
 $filter = filter_input(INPUT_GET, "filter", FILTER_SANITIZE_STRING);
 $category = filter_input(INPUT_GET, "category", FILTER_SANITIZE_STRING);
 
 if ($filter && !$category) {
-    $statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects  WHERE projects.title LIKE :filter) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id  WHERE projects.title LIKE :filter";
+    $statement = "SELECT PROJECTS.*, categories.name as 'category',(SELECT COUNT(*) FROM projects  WHERE projects.title LIKE :filter) as 'total' FROM projects LEFT OUTER JOIN categories ON projects.category_id = categories.id  WHERE projects.title LIKE :filter";
 } else if ($filter && $category) {
-    $statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects INNER JOIN categories ON projects.category_id = categories.id  WHERE projects.title LIKE :filter AND categories.name = :category) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id   WHERE projects.title LIKE :filter AND categories.name = :category";
+    $statement = "SELECT PROJECTS.*, categories.name as 'category',(SELECT COUNT(*) FROM projects LEFT OUTER JOIN categories ON projects.category_id = categories.id  WHERE projects.title LIKE :filter AND categories.name = :category) as 'total' FROM projects LEFT OUTER JOIN categories ON projects.category_id = categories.id   WHERE projects.title LIKE :filter AND categories.name = :category";
 }elseif ($category) {
-    $statement = "SELECT *, categories.name as 'category',(SELECT COUNT(*) FROM projects INNER JOIN categories ON projects.category_id = categories.id WHERE categories.name = :category) as 'total' FROM projects INNER JOIN categories ON projects.category_id = categories.id   WHERE categories.name = :category";
+    $statement = "SELECT PROJECTS.*, categories.name as 'category',(SELECT COUNT(*) FROM projects LEFT OUTER JOIN categories ON projects.category_id = categories.id WHERE categories.name = :category) as 'total' FROM projects LEFT OUTER JOIN categories ON projects.category_id = categories.id WHERE categories.name = :category";
 }
 
 if (isset($_GET["sortby"])) {

@@ -15,6 +15,8 @@ if (isset($_SESSION['user'])) {
     $user = $_SESSION['user'];
     $title = filter_var($_POST['title'], FILTER_SANITIZE_STRING);
     $description = filter_var($_POST['description'], FILTER_SANITIZE_STRING);
+    $category_id = filter_input(INPUT_POST, 'category_id', FILTER_SANITIZE_NUMBER_INT);
+
     // this checks for image-ness
     if (!empty($_FILES['thumbnail']['name']) && getimagesize($_FILES['thumbnail']["tmp_name"])) {
         $file = $_FILES['thumbnail'];
@@ -24,20 +26,22 @@ if (isset($_SESSION['user'])) {
             $image->resizeToWidth(400);
             unlink($filename);
             $image->save($filename);
-            $query = $db->prepare('INSERT INTO PROJECTS (`Creator`,`Title`,`Description`,`thumbnailUrl`) VALUES (:username,:title,:description,:thumbnailUrl)');
+            $query = $db->prepare('INSERT INTO PROJECTS (`Creator`,`Title`,`Description`,`thumbnailUrl`, `category_id`) VALUES (:username,:title,:description,:thumbnailUrl, :category_id)');
             $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
             $query->bindValue(':title', $title, PDO::PARAM_STR);
             $query->bindValue(':description', $description, PDO::PARAM_STR);
             $query->bindValue(':thumbnailUrl', $filename);
+            $query->bindValue(':category_id', $category_id, PDO::PARAM_INT);
             $query->execute();
             $result = 'success';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
         }
     } else {
-        $query = $db->prepare('INSERT INTO PROJECTS (`Creator`,`Title`,`Description`) VALUES (:username,:title,:description)');
+        $query = $db->prepare('INSERT INTO PROJECTS (`Creator`,`Title`,`Description`, `category_id`) VALUES (:username,:title,:description, :category_id)');
         $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
         $query->bindValue(':title', $title, PDO::PARAM_STR);
         $query->bindValue(':description', $description, PDO::PARAM_STR);
+        $query->bindValue(':category_id', $category_id, PDO::PARAM_INT);
         $query->execute();
         $result = 'success';
         header('Location: ' . $_SERVER['HTTP_REFERER']);
