@@ -1,9 +1,9 @@
 <?php
 
+session_start();
 header("content-type:Application/json");
 require('config.php');
 header("Access-Control-Allow-Credentials: true");
-session_start();
 
 echo json_encode([
     'name' => $_SESSION['user']['name'],

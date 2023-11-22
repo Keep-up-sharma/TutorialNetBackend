@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 header("content-type:Application/json");
 require('config.php');
 header("Access-Control-Allow-Credentials: true");
