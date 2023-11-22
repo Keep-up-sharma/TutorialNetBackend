@@ -17,8 +17,13 @@ if (isset($_SESSION['user'])) {
         $filename = 'uploads/' . time() . $_FILES['thumbnail']['name'];
         if (move_uploaded_file($file['tmp_name'], $filename)) {
             // Fetch the current thumbnail URL
-            $fetchQuery = $db->prepare('SELECT thumbnailUrl FROM PROJECTS WHERE `Creator` = :username AND `Id` = :projectId');
-            $fetchQuery->bindValue(':username', $user['username'], PDO::PARAM_STR);
+            if (!$user['isModerator'])
+                $fetchQuery = $db->prepare('SELECT thumbnailUrl FROM PROJECTS WHERE `Creator` = :username AND `Id` = :projectId');
+            else
+                $fetchQuery = $db->prepare('SELECT thumbnailUrl FROM PROJECTS WHERE `Id` = :projectId');
+
+            if (!$user['isModerator'])
+                $fetchQuery->bindValue(':username', $user['username'], PDO::PARAM_STR);
             $fetchQuery->bindValue(':projectId', $projectId, PDO::PARAM_INT);
             $fetchQuery->execute();
             $fetchResult = $fetchQuery->fetch(PDO::FETCH_ASSOC);
@@ -30,8 +35,13 @@ if (isset($_SESSION['user'])) {
             }
 
             // Update the project with the new thumbnail
-            $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description, `thumbnailUrl` = :thumbnailUrl WHERE `Creator` = :username AND `Id` = :projectId');
-            $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
+            if ($user['isModerator'])
+                $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description, `thumbnailUrl` = :thumbnailUrl WHERE `Id` = :projectId');
+            else
+                $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description, `thumbnailUrl` = :thumbnailUrl WHERE `Creator` = :username AND `Id` = :projectId');
+
+            if (!$user['isModerator'])
+                $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
             $query->bindValue(':title', $title, PDO::PARAM_STR);
             $query->bindValue(':description', $description, PDO::PARAM_STR);
             $query->bindValue(':thumbnailUrl', $filename);
@@ -40,15 +50,19 @@ if (isset($_SESSION['user'])) {
             $result = 'success';
             header('Location: ' . $_SERVER['HTTP_REFERER']);
         }
-    }else{
-        $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description WHERE `Creator` = :username AND `Id` = :projectId');
+    } else {
+        if ($user['isModerator'])
+            $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description WHERE `Id` = :projectId');
+        else
+            $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description WHERE `Creator` = :username AND `Id` = :projectId');
+        if (!$user['isModerator'])
             $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
-            $query->bindValue(':title', $title, PDO::PARAM_STR);
-            $query->bindValue(':description', $description, PDO::PARAM_STR);
-            $query->bindValue(':projectId', $projectId, PDO::PARAM_INT);
-            $query->execute();
-            $result = 'success';
-            header('Location: ' . $_SERVER['HTTP_REFERER']);
+        $query->bindValue(':title', $title, PDO::PARAM_STR);
+        $query->bindValue(':description', $description, PDO::PARAM_STR);
+        $query->bindValue(':projectId', $projectId, PDO::PARAM_INT);
+        $query->execute();
+        $result = 'success';
+        header('Location: ' . $_SERVER['HTTP_REFERER']);
     }
 }
 echo json_encode(['result' => $result]);

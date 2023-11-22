@@ -17,9 +17,13 @@ if (!isset($_GET['id'])) {
 
 $id = filter_input(INPUT_GET, "id", FILTER_SANITIZE_NUMBER_INT);
 require "db_connect.php";
-$query = $db->prepare("DELETE FROM projects WHERE id=:id AND creator=:user");
+if ($user['isModerator'])
+    $query = $db->prepare("DELETE FROM projects WHERE id=:id");
+else
+    $query = $db->prepare("DELETE FROM projects WHERE id=:id AND creator=:user");
 $query->bindValue(":id", $id);
-$query->bindValue(":user", $_SESSION['user']['username']);
+if (!$user['isModerator'])
+    $query->bindValue(":user", $_SESSION['user']['username']);
 $query->execute();
 echo json_encode(array('success' => true));
 ?>
