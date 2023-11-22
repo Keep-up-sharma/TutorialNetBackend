@@ -4,7 +4,7 @@ header("content-type:Application/json");
 require('config.php');
 header("Access-Control-Allow-Credentials: true");
 session_start();
-
+$user = $_SESSION['user'];
 if (!isset($_SESSION['user']['username'])) {
     echo json_encode(['success' => false, 'error' => 'not authorized']);
     die();
