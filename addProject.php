@@ -26,7 +26,7 @@ if (isset($_SESSION['user'])) {
             $image->resizeToWidth(400);
             unlink($filename);
             $image->save($filename);
-            $query = $db->prepare('INSERT INTO PROJECTS (`Creator`,`Title`,`Description`,`thumbnailUrl`, `category_id`) VALUES (:username,:title,:description,:thumbnailUrl, :category_id)');
+            $query = $db->prepare('INSERT INTO projects (`Creator`,`Title`,`Description`,`thumbnailUrl`, `category_id`) VALUES (:username,:title,:description,:thumbnailUrl, :category_id)');
             $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
             $query->bindValue(':title', $title, PDO::PARAM_STR);
             $query->bindValue(':description', $description, PDO::PARAM_STR);
@@ -37,7 +37,7 @@ if (isset($_SESSION['user'])) {
             header('Location: ' . $_SERVER['HTTP_REFERER']);
         }
     } else {
-        $query = $db->prepare('INSERT INTO PROJECTS (`Creator`,`Title`,`Description`, `category_id`) VALUES (:username,:title,:description, :category_id)');
+        $query = $db->prepare('INSERT INTO projects (`Creator`,`Title`,`Description`, `category_id`) VALUES (:username,:title,:description, :category_id)');
         $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
         $query->bindValue(':title', $title, PDO::PARAM_STR);
         $query->bindValue(':description', $description, PDO::PARAM_STR);

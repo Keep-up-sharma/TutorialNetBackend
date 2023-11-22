@@ -18,9 +18,9 @@ if (isset($_SESSION['user'])) {
         if (move_uploaded_file($file['tmp_name'], $filename)) {
             // Fetch the current thumbnail URL
             if (!$user['isModerator'])
-                $fetchQuery = $db->prepare('SELECT thumbnailUrl FROM PROJECTS WHERE `Creator` = :username AND `Id` = :projectId');
+                $fetchQuery = $db->prepare('SELECT thumbnailUrl FROM projects WHERE `Creator` = :username AND `Id` = :projectId');
             else
-                $fetchQuery = $db->prepare('SELECT thumbnailUrl FROM PROJECTS WHERE `Id` = :projectId');
+                $fetchQuery = $db->prepare('SELECT thumbnailUrl FROM projects WHERE `Id` = :projectId');
 
             if (!$user['isModerator'])
                 $fetchQuery->bindValue(':username', $user['username'], PDO::PARAM_STR);
@@ -36,9 +36,9 @@ if (isset($_SESSION['user'])) {
 
             // Update the project with the new thumbnail
             if ($user['isModerator'])
-                $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description, `thumbnailUrl` = :thumbnailUrl WHERE `Id` = :projectId');
+                $query = $db->prepare('UPDATE projects SET `Title` = :title, `Description` = :description, `thumbnailUrl` = :thumbnailUrl WHERE `Id` = :projectId');
             else
-                $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description, `thumbnailUrl` = :thumbnailUrl WHERE `Creator` = :username AND `Id` = :projectId');
+                $query = $db->prepare('UPDATE projects SET `Title` = :title, `Description` = :description, `thumbnailUrl` = :thumbnailUrl WHERE `Creator` = :username AND `Id` = :projectId');
 
             if (!$user['isModerator'])
                 $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
@@ -52,9 +52,9 @@ if (isset($_SESSION['user'])) {
         }
     } else {
         if ($user['isModerator'])
-            $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description WHERE `Id` = :projectId');
+            $query = $db->prepare('UPDATE projects SET `Title` = :title, `Description` = :description WHERE `Id` = :projectId');
         else
-            $query = $db->prepare('UPDATE PROJECTS SET `Title` = :title, `Description` = :description WHERE `Creator` = :username AND `Id` = :projectId');
+            $query = $db->prepare('UPDATE projects SET `Title` = :title, `Description` = :description WHERE `Creator` = :username AND `Id` = :projectId');
         if (!$user['isModerator'])
             $query->bindValue(':username', $user['username'], PDO::PARAM_STR);
         $query->bindValue(':title', $title, PDO::PARAM_STR);
